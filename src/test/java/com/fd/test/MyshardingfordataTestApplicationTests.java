@@ -20,15 +20,15 @@ import com.fd.myshardingfordata.helper.GroupFun;
 import com.fd.myshardingfordata.helper.MyObjectUtils;
 import com.fd.myshardingfordata.helper.ObData;
 import com.fd.myshardingfordata.helper.Param;
-import com.fd.test.biz.dao.ITrainningDao;
 import com.fd.test.biz.domain.Trainning;
+import com.fd.test.biz.service.ITestService;
 
 @SpringBootTest
 class MyshardingfordataTestApplicationTests {
 	private final static Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Resource
-	private ITrainningDao trainningDao;
+	private ITestService testService;
 
 	@Test
 	void save() {
@@ -37,42 +37,49 @@ class MyshardingfordataTestApplicationTests {
 			Trainning pojo = new Trainning(String.valueOf(System.currentTimeMillis()),
 					ThreadLocalRandom.current().nextInt(10000), ThreadLocalRandom.current().nextInt(100000),
 					ThreadLocalRandom.current().nextDouble(200000), ThreadLocalRandom.current().nextDouble(50000000));
-			trainningDao.save(pojo);
+			testService.getTrainningDao().save(pojo);
 			log.info("curId:{}", pojo.getSid());
 		});
 	}
 
 	@Test
+	void tranactional() {
+		testService.testtransactional();
+	}
+
+	@Test
 	void update() {
-		Integer i = trainningDao
-				.update(Param.getParams(new Param("createDate", Operate.GT, LocalDate.now().minusDays(10)),
-						new Param("sid", Operate.EQ, 1)), MyObjectUtils.getMap("name", "大大大", "i1", 11, "d1", 20D));
+		Integer i = testService
+				.getTrainningDao().update(
+						Param.getParams(new Param("createDate", Operate.GT, LocalDate.now().minusDays(10)),
+								new Param("sid", Operate.EQ, 1)),
+						MyObjectUtils.getMap("name", "大大大", "i1", 11, "d1", 20D));
 		log.info("修改的行数:{}", i);
 	}
 
 	@Test
 	void delete() {
-		Integer i = trainningDao.delete(Param.getParams(
+		Integer i = testService.getTrainningDao().delete(Param.getParams(
 				new Param("createDate", Operate.GE, LocalDate.now().minusDays(100)), new Param("sid", Operate.EQ, 2)));
 		log.info("删除的行数:{}", i);
 	}
 
 	@Test
 	void get() {
-		Trainning o = trainningDao.findFirst(Param.getParams(new Param("sid", Operate.EQ, 1)));
+		Trainning o = testService.getTrainningDao().findFirst(Param.getParams(new Param("sid", Operate.EQ, 1)));
 		log.info("name is :{}", o.getName());
 	}
 
 	@Test
 	void list() {
-		List<Trainning> list = trainningDao.getList(1, 20, ObData.getSet(new ObData("sid", true)),
+		List<Trainning> list = testService.getTrainningDao().getList(1, 20, ObData.getSet(new ObData("sid", true)),
 				Param.getParams(new Param("sid", Operate.GT, 3)));
 		log.info("list size is :{}", list.size());
 	}
 
 	@Test
 	void groupby() {
-		List<Object[]> groups = trainningDao.getGroupList(1, 30,
+		List<Object[]> groups = testService.getTrainningDao().getGroupList(1, 30,
 				ObData.getSet(new ObData("d2", StatisticsType.SUM, true), new ObData("i1", true)),
 				Param.getParams(new Param("d2", Operate.GT, 1, StatisticsType.SUM, PmType.FUN),
 						new Param("d1", Operate.GT, 1), new Param("i2", Operate.GE, 10)),
@@ -85,7 +92,7 @@ class MyshardingfordataTestApplicationTests {
 
 	@Test
 	void groupbyCount() {
-		Long c = trainningDao
+		Long c = testService.getTrainningDao()
 				.getGroupbyCount(Param.getParams(new Param("d2", Operate.GT, 1, StatisticsType.SUM, PmType.FUN),
 						new Param("d1", Operate.GT, 1), new Param("i2", Operate.GE, 10)), "i1", "d1", "d2");
 		log.info("分组数量：{}", c);
