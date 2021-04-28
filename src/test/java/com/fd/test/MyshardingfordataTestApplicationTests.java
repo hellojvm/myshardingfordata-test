@@ -20,6 +20,7 @@ import com.fd.myshardingfordata.helper.GroupFun;
 import com.fd.myshardingfordata.helper.MyObjectUtils;
 import com.fd.myshardingfordata.helper.ObData;
 import com.fd.myshardingfordata.helper.Param;
+import com.fd.test.biz.domain.Customers;
 import com.fd.test.biz.domain.Trainning;
 import com.fd.test.biz.service.ITestService;
 
@@ -29,10 +30,13 @@ class MyshardingfordataTestApplicationTests {
 
 	@Resource
 	private ITestService testService;
-
+	@Test
+	void saveCustomers() {
+		testService.getCustomersDao().save(new Customers(2200L));
+	}
 	@Test
 	void save() {
-		IntStream.rangeClosed(1, 10).forEach(i -> {
+		IntStream.rangeClosed(1, 20).forEach(i -> {
 
 			Trainning pojo = new Trainning(String.valueOf(System.currentTimeMillis()),
 					ThreadLocalRandom.current().nextInt(10000), ThreadLocalRandom.current().nextInt(100000),
